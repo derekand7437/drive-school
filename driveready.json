@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "id": 1773624256621,
+      "username": "derekand2011@gmail.com",
+      "password": "$2b$10$VivPrmRkw93/6NFqxvt96OstZVbdiypd4EAX/lfDenz17jXSvNHFG",
+      "createdAt": "2026-03-16T01:24:16.621Z"
+    }
+  ],
+  "progress": {
+    "1773624256621": []
+  },
+  "quizResults": []
+}

@@ -1,0 +1,10 @@
+npm install -g cspell
+# run in repo root
+cspell "**/*" --config cspell.json
+# example cspell.json
+{
+    "version": "0.2",
+    "language": "en",
+    "ignorePaths": ["node_modules", "dist"],
+    "words": []
+}

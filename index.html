@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DriveReady - Learn to Drive</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --card: #21253a;
+      --border: #2e3347;
+      --accent: #4f80ff;
+      --accent2: #7c5cfc;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --text: #e8eaf0;
+      --muted: #8891aa;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .nav-links button:hover, .nav-links button.active {
+      background: var(--card);
+      color: var(--text);
+    }
+    .progress-badge {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(79,128,255,.12);
+      border: 1px solid rgba(79,128,255,.25);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-user { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .btn-logout {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-size: 13px; padding: 5px 12px; border-radius: 8px; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-logout:hover { border-color: #ff5f5f; color: #ff5f5f; }
+
+    /* AUTH VIEW */
+    #auth {
+      align-items: center; justify-content: center;
+      background: var(--bg); padding: 32px 16px;
+    }
+    .auth-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 40px; width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+    .auth-title { font-size: 24px; font-weight: 800; text-align: center; }
+    .auth-subtitle { font-size: 14px; color: var(--muted); text-align: center; margin-top: -16px; }
+    .auth-tabs { display: flex; gap: 0; background: var(--surface); border-radius: 10px; padding: 4px; }
+    .auth-tab {
+      flex: 1; padding: 8px; border: none; background: none; color: var(--muted);
+      font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all .15s;
+    }
+    .auth-tab.active { background: var(--card); color: var(--text); }
+    .auth-fields { display: flex; flex-direction: column; gap: 12px; }
+    .auth-input {
+      width: 100%; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 15px; outline: none; box-sizing: border-box;
+      transition: border-color .15s;
+    }
+    .auth-input:focus { border-color: var(--accent); }
+    .auth-error { font-size: 13px; color: #ff5f5f; text-align: center; min-height: 18px; }
+    .btn-auth {
+      width: 100%; padding: 13px; background: var(--accent); border: none; border-radius: 10px;
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+    }
+    .btn-auth:hover { opacity: .85; }
+
+    /* VIEWS */
+    .view { display: none; flex: 1; }
+    .view.active { display: flex; flex-direction: column; }
+
+    /* HOME */
+    #home {
+      position: relative;
+      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .home-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('home-bg.jpg');
+      background-size: cover;
+      background-position: center center;
+    }
+    .home-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,.25) 0%,
+        rgba(0,0,0,.15) 40%,
+        rgba(0,0,0,.45) 100%);
+    }
+    .home-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 24px 32px;
+      max-width: 860px;
+      margin-top: -500px;
+      margin-right: 820px;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
+      border-radius: 16px;
+    }
+    .home-eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.6);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      color: #fff;
+      letter-spacing: -2px;
+    }
+    .hero h1 span {
+      -webkit-text-fill-color: #7eb3ff;
+      color: #7eb3ff;
+    }
+    .hero h1 .white {
+      -webkit-text-fill-color: #ffffff;
+      color: #ffffff;
+      background: none;
+    }
+    .hero p {
+      font-size: clamp(16px, 2vw, 20px);
+      color: rgba(255,255,255,.7);
+      line-height: 1.6;
+      margin-bottom: 40px;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .home-stats {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .home-stat {
+      flex: 1;
+      max-width: 200px;
+      padding: 18px 12px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,.1);
+    }
+    .home-stat:last-child { border-right: none; }
+    .home-stat .num {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .home-stat .label { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 2px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all .15s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(79,128,255,.35);
+    }
+    .btn-primary:hover { opacity: .88; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79,128,255,.45); }
+    .btn-secondary {
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.25);
+      backdrop-filter: blur(8px);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.18); }
+    .stat-card { display: none; }
+
+    /* LESSONS VIEW */
+    #lessons { padding: 0; gap: 0; }
+    .lessons-inner { padding: 0; }
+    .section-title { font-size: 22px; font-weight: 700; }
+    .section-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .lessons-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      flex: 1;
+      gap: 3px;
+    }
+    .lesson-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      min-height: 260px;
+    }
+    .lesson-card:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .lesson-card:nth-child(2) { grid-column: 2; grid-row: 1; }
+    .lesson-card:nth-child(3) { grid-column: 3; grid-row: 1; }
+    .lesson-card:nth-child(4) { grid-column: 1; grid-row: 2; }
+    .lesson-card:nth-child(5) { grid-column: 2; grid-row: 2; }
+    .lesson-card:nth-child(6) { grid-column: 3; grid-row: 2; }
+    .card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.55) saturate(0.85);
+      transition: transform .5s ease, filter .4s ease;
+    }
+    .lesson-card:hover .card-bg { transform: scale(1.06); filter: brightness(1.15) saturate(1.2); }
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.45) 50%, rgba(0,0,0,.3) 100%);
+      transition: background .4s;
+    }
+    .lesson-card:hover .card-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,.55) 0%, rgba(0,0,0,.1) 55%, rgba(0,0,0,0) 100%);
+    }
+    .card-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+    }
+    .card-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: rgba(79,128,255,.3);
+      border: 1px solid rgba(79,128,255,.5);
+      color: #a8c0ff;
+      margin-bottom: 8px;
+    }
+    .lesson-card.done .card-tag {
+      background: rgba(34,197,94,.25);
+      border-color: rgba(34,197,94,.5);
+      color: #86efac;
+    }
+    .card-title { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 8px; line-height: 1.15; letter-spacing: -.3px; }
+    .card-desc { font-size: 14px; color: rgba(255,255,255,.72); line-height: 1.5; }
+    .card-content { padding: 24px; }
+    .done-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 28px;
+      height: 28px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #fff;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,0,0,.4);
+    }
+    @media (max-width: 700px) {
+      .lessons-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+      }
+      .lesson-card:nth-child(3) { grid-column: 1; grid-row: 2; }
+      .lesson-card:nth-child(4) { grid-column: 2; grid-row: 2; }
+      .lesson-card:nth-child(5) { grid-column: 1; grid-row: 3; }
+      .lesson-card:nth-child(6) { grid-column: 2; grid-row: 3; }
+    }
+
+    /* LESSON DETAIL */
+    #lesson-detail { padding: 32px; max-width: 760px; margin: 0 auto; width: 100%; gap: 24px; }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: color .15s;
+    }
+    .back-btn:hover { color: var(--text); }
+    .lesson-header { padding: 28px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+    .lesson-header .lh-icon { width: 100%; height: 200px; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+    .lesson-header .lh-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .lesson-header h2 { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+    .lesson-header p { color: var(--muted); line-height: 1.6; }
+    .lesson-body { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .lesson-body h3 { font-size: 17px; font-weight: 700; margin: 20px 0 10px; }
+    .lesson-body h3:first-child { margin-top: 0; }
+    .lesson-body p { color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+    .lesson-body ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .lesson-body ul li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .lesson-body ul li::before {
+      content: '→';
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .tip-box {
+      background: rgba(79,128,255,.08);
+      border: 1px solid rgba(79,128,255,.2);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .tip-box strong { color: var(--accent); }
+    .warning-box {
+      background: rgba(245,158,11,.08);
+      border: 1px solid rgba(245,158,11,.25);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .warning-box strong { color: var(--yellow); }
+
+    /* QUIZ */
+    #quiz { padding: 32px; max-width: 660px; margin: 0 auto; width: 100%; gap: 24px; }
+    .quiz-header { text-align: center; }
+    .quiz-progress-track {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .quiz-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      transition: width .4s;
+    }
+    .quiz-counter { font-size: 13px; color: var(--muted); text-align: right; margin-top: 6px; }
+    .question-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .question-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 24px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 15px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(79,128,255,.07); }
+    .option-btn.correct { border-color: var(--green); background: rgba(34,197,94,.1); color: var(--green); }
+    .option-btn.wrong { border-color: var(--red); background: rgba(239,68,68,.1); color: var(--red); }
+    .option-btn:disabled { cursor: default; }
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .option-btn.correct .option-letter { background: var(--green); color: #fff; }
+    .option-btn.wrong .option-letter { background: var(--red); color: #fff; }
+    .feedback-box {
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+    .feedback-box.correct { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); color: var(--green); }
+    .feedback-box.wrong { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); color: #f87171; }
+
+    /* RESULTS */
+    #results { padding: 32px; max-width: 560px; margin: 0 auto; width: 100%; align-items: center; gap: 24px; }
+    .score-circle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 800;
+      border: 4px solid;
+    }
+    .score-circle.great { border-color: var(--green); color: var(--green); background: rgba(34,197,94,.1); }
+    .score-circle.ok { border-color: var(--yellow); color: var(--yellow); background: rgba(245,158,11,.1); }
+    .score-circle.poor { border-color: var(--red); color: var(--red); background: rgba(239,68,68,.1); }
+    .score-circle .score-label { font-size: 13px; font-weight: 500; }
+    .results-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      width: 100%;
+      text-align: center;
+    }
+    .results-card h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .results-card p { color: var(--muted); margin-bottom: 24px; }
+    .results-breakdown { display: flex; gap: 16px; justify-content: center; margin-bottom: 24px; }
+    .rb-item { text-align: center; }
+    .rb-item .rb-num { font-size: 24px; font-weight: 700; }
+    .rb-item .rb-label { font-size: 12px; color: var(--muted); }
+    .rb-item.correct .rb-num { color: var(--green); }
+    .rb-item.wrong .rb-num { color: var(--red); }
+    .results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* SIGNS */
+    #signs { padding: 0; gap: 0; overflow: hidden; }
+    .signs-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      flex: 1;
+      gap: 3px;
+    }
+    .sign-card {
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+      min-height: 140px;
+    }
+    .sign-card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.55) saturate(0.85);
+      transition: transform .5s ease, filter .4s ease;
+    }
+    .sign-card:hover .sign-card-bg { transform: scale(1.07); filter: brightness(1.15) saturate(1.2); }
+    .sign-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.45) 50%, rgba(0,0,0,.3) 100%);
+      transition: background .4s;
+    }
+    .sign-card:hover .sign-card-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,.55) 0%, rgba(0,0,0,.1) 55%, rgba(0,0,0,0) 100%);
+    }
+    .sign-card-content {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px;
+    }
+    .sign-card .sign-name { font-size: 17px; font-weight: 900; color: #fff; margin-bottom: 5px; line-height: 1.2; }
+    .sign-card .sign-desc { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    @media (max-width: 900px) {
+      .signs-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; }
+    }
+    @media (max-width: 600px) {
+      .signs-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* SIGN SHAPES */
+    .sign-octagon {
+      background: var(--red);
+      color: #fff;
+      clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+      border-radius: 0;
+      width: 80px;
+      height: 80px;
+    }
+    .sign-triangle {
+      width: 0;
+      height: 0;
+      background: none !important;
+      border-left: 40px solid transparent;
+      border-right: 40px solid transparent;
+      border-bottom: 70px solid var(--yellow);
+      border-radius: 0;
+      position: relative;
+    }
+    .sign-triangle span {
+      position: absolute;
+      top: 20px;
+      left: -18px;
+      font-size: 18px;
+      color: #000;
+    }
+    .sign-circle-red {
+      background: #fff;
+      border: 8px solid var(--red);
+      border-radius: 50%;
+      color: var(--red);
+      font-size: 20px;
+    }
+    .sign-circle-blue {
+      background: var(--accent);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 20px;
+    }
+    .sign-rect-green {
+      background: var(--green);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 11px;
+      padding: 4px;
+    }
+    .sign-diamond {
+      background: var(--yellow);
+      transform: rotate(45deg);
+      width: 56px;
+      height: 56px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-size: 18px;
+    }
+    .sign-diamond span { transform: rotate(-45deg); }
+    .sign-pentagon {
+      background: var(--green);
+      clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+      border-radius: 0;
+      color: #fff;
+      font-size: 11px;
+      align-items: flex-end;
+      padding-bottom: 12px;
+    }
+
+    /* PROGRESS PAGE */
+    #progress { padding: 0; gap: 0; overflow: hidden; }
+    .progress-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      flex: 1;
+      gap: 3px;
+    }
+    .progress-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      min-height: 260px;
+    }
+    .progress-card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform .5s ease, filter .4s ease;
+    }
+    .progress-card.done .progress-card-bg { filter: grayscale(60%) brightness(0.4); }
+    .progress-card.todo .progress-card-bg { filter: brightness(0.55) saturate(0.85); }
+    .progress-card.todo:hover .progress-card-bg { transform: scale(1.04); filter: brightness(1.15) saturate(1.2); }
+    .progress-card-overlay {
+      position: absolute;
+      inset: 0;
+      transition: background .3s;
+    }
+    .progress-card.done .progress-card-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.85) 50%, rgba(0,0,0,.75) 100%);
+    }
+    .progress-card.todo .progress-card-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,.8) 0%, rgba(0,0,0,.2) 55%, rgba(0,0,0,0) 100%);
+    }
+    .progress-card-content {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 22px;
+    }
+    .progress-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .progress-card.done .progress-status {
+      background: rgba(0,0,0,.5);
+      border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.45);
+    }
+    .progress-card.todo .progress-status {
+      background: rgba(79,128,255,.3);
+      border: 1px solid rgba(79,128,255,.6);
+      color: #a8c0ff;
+    }
+    .progress-card-title {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -.3px;
+      margin-bottom: 6px;
+    }
+    .progress-card.done .progress-card-title { color: rgba(255,255,255,.35); }
+    .progress-card.todo .progress-card-title { color: #fff; }
+    .progress-card-desc {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .progress-card.done .progress-card-desc { color: rgba(255,255,255,.25); }
+    .progress-card.todo .progress-card-desc { color: rgba(255,255,255,.7); }
+    .progress-header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(0,0,0,.7), transparent);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .progress-header-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.7); letter-spacing: .5px; text-transform: uppercase; }
+    .progress-header-count { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.5); }
+    @media (max-width: 700px) {
+      .progress-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+    }
+
+    /* SIGN MODAL */
+    .sign-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    .sign-modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .sign-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      overflow: hidden;
+      transform: translateY(24px) scale(.97);
+      transition: transform .25s;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .sign-modal-backdrop.open .sign-modal { transform: translateY(0) scale(1); }
+    .sign-modal-img {
+      width: 100%;
+      height: 220px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .sign-modal-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 60%);
+    }
+    .sign-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.5);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .sign-modal-close:hover { background: rgba(255,255,255,.2); }
+    .sign-modal-title {
+      position: absolute;
+      bottom: 16px;
+      left: 20px;
+      font-size: 26px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .sign-modal-body {
+      padding: 20px 24px 24px;
+      overflow-y: auto;
+    }
+    .sign-modal-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sign-modal-facts-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .sign-modal-facts { display: flex; flex-direction: column; gap: 10px; }
+    .sign-modal-fact {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .sign-modal-fact::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      margin-top: 8px;
+    }
+
+    /* SCROLLABLE */
+    .scroll-container { overflow-y: auto; flex: 1; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      nav { padding: 12px 16px; }
+      #home, #lessons, #lesson-detail, #quiz, #results, #signs { padding: 20px 16px; }
+      .nav-links button { padding: 6px 10px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="main-nav" style="display:none;">
+  <div class="logo" onclick="showView('home')">DriveReady</div>
+  <div class="nav-links">
+    <button onclick="showView('home')" class="active" id="nav-home">Home</button>
+    <button onclick="showView('lessons')" id="nav-lessons">Lessons</button>
+    <button onclick="showView('signs')" id="nav-signs">Road Signs</button>
+  </div>
+  <div class="nav-right">
+    <div class="progress-badge" id="progress-badge">0 / 6 done</div>
+    <span class="nav-user" id="nav-username"></span>
+    <button class="btn-logout" onclick="logout()">Log out</button>
+  </div>
+</nav>
+
+<!-- AUTH -->
+<div class="view active" id="auth">
+  <div class="auth-card">
+    <div class="auth-title">DriveReady</div>
+    <div class="auth-subtitle">Sign in to track your progress</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Log In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Sign Up</button>
+    </div>
+    <div class="auth-fields">
+      <input class="auth-input" id="auth-username" type="text" placeholder="Username" autocomplete="username" />
+      <input class="auth-input" id="auth-password" type="password" placeholder="Password" autocomplete="current-password" />
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <button class="btn-auth" id="auth-submit" onclick="submitAuth()">Log In</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="view active" id="home">
+  <div class="home-bg"></div>
+  <div class="home-overlay"></div>
+  <div class="home-content hero">
+    <div class="home-eyebrow">Your Road to Confidence</div>
+    <h1>Learn to Drive <span class="white">Like</span><span> a Pro</span></h1>
+    <p>Master the rules of the road through interactive lessons, road sign guides, and knowledge quizzes — all at your own pace.</p>
+    <button class="btn btn-primary" onclick="showView('lessons')">Start Learning</button>
+  </div>
+  <div class="home-stats">
+    <div class="home-stat"><div class="num">6</div><div class="label">Lessons</div></div>
+    <div class="home-stat"><div class="num">30+</div><div class="label">Quiz Questions</div></div>
+    <div class="home-stat"><div class="num">20</div><div class="label">Road Signs</div></div>
+    <div class="home-stat"><div class="num">100%</div><div class="label">Free</div></div>
+  </div>
+</div>
+
+<!-- LESSONS LIST -->
+<div class="view" id="lessons" style="overflow:hidden;">
+  <div class="lessons-grid" id="lessons-grid" style="flex:1;"></div>
+</div>
+
+<!-- LESSON DETAIL -->
+<div class="view scroll-container" id="lesson-detail">
+  <div style="max-width:760px; margin:0 auto; width:100%; padding:32px; display:flex; flex-direction:column; gap:24px;">
+    <button class="back-btn" onclick="showView('lessons')">← Back to Lessons</button>
+    <div class="lesson-header" id="detail-header"></div>
+    <div class="lesson-body" id="detail-body"></div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <button class="btn btn-primary" id="start-quiz-btn" onclick="startQuiz()">Take the Quiz</button>
+      <button class="btn btn-secondary" onclick="showView('lessons')">Back to Lessons</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="view scroll-container" id="quiz">
+  <div style="max-width:660px; margin:0 auto; width:100%; padding:32px; display:flex; flex-direction:column; gap:24px;">
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="font-size:14px; font-weight:600;" id="quiz-lesson-name"></div>
+        <button class="back-btn" onclick="showView('lesson-detail')">← Back</button>
+      </div>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
+      <div class="quiz-counter" id="quiz-counter"></div>
+    </div>
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options-container"></div>
+      <div id="feedback-area" style="display:none;"></div>
+    </div>
+    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" style="display:none; align-self:flex-end;">Next Question →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="view scroll-container" id="results">
+  <div style="max-width:560px; margin:0 auto; width:100%; padding:32px; display:flex; flex-direction:column; align-items:center; gap:24px;">
+    <div class="score-circle" id="score-circle"></div>
+    <div class="results-card">
+      <h2 id="results-title"></h2>
+      <p id="results-subtitle"></p>
+      <div class="results-breakdown">
+        <div class="rb-item correct"><div class="rb-num" id="correct-count"></div><div class="rb-label">Correct</div></div>
+        <div class="rb-item wrong"><div class="rb-num" id="wrong-count"></div><div class="rb-label">Incorrect</div></div>
+        <div class="rb-item"><div class="rb-num" id="total-count" style="color:var(--accent)"></div><div class="rb-label">Total</div></div>
+      </div>
+      <div class="results-actions">
+        <button class="btn btn-primary" onclick="startQuiz()">Retry Quiz</button>
+        <button class="btn btn-secondary" onclick="showView('lessons')">All Lessons</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="view" id="progress" style="overflow:hidden;">
+  <div class="progress-header">
+    <div class="progress-header-title">My Progress</div>
+    <div class="progress-header-count" id="progress-header-count"></div>
+  </div>
+  <div class="progress-grid" id="progress-grid" style="flex:1;"></div>
+</div>
+
+<!-- ROAD SIGNS -->
+<div class="view" id="signs" style="overflow:hidden;">
+  <div class="signs-grid" id="signs-grid" style="flex:1;"></div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────────
+
+const LESSONS = [
+  {
+    id: 0,
+    icon: '🚗',
+    img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+    title: 'Getting Started',
+    desc: 'Pre-drive checklist, seat adjustments, and cockpit essentials.',
+    tag: 'Beginner',
+    content: `
+      <h3>Before You Turn the Key</h3>
+      <p>Every safe drive begins before the engine starts. Develop a pre-drive routine so it becomes second nature.</p>
+      <ul>
+        <li>Walk around the vehicle — check for flat tyres, fluid leaks, or obstructions behind the car.</li>
+        <li>Adjust your seat so you can fully press the clutch/brake with a slight bend in your knee.</li>
+        <li>Adjust the steering wheel so your wrists rest on the top when your arms are extended.</li>
+        <li>Set all three mirrors — left, right, and rear-view — eliminating as many blind spots as possible.</li>
+        <li>Fasten your seatbelt and ensure all passengers do the same before moving.</li>
+      </ul>
+      <h3>The Cockpit Drill (DSSSM)</h3>
+      <ul>
+        <li><strong>D</strong>oors — check all doors are fully closed.</li>
+        <li><strong>S</strong>eat — adjust for comfortable reach of pedals and wheel.</li>
+        <li><strong>S</strong>teering wheel — adjust height and reach.</li>
+        <li><strong>S</strong>eatbelt — clip in and confirm it's not twisted.</li>
+        <li><strong>M</strong>irrors — internal, then right, then left.</li>
+      </ul>
+      <div class="tip-box"><strong>Tip:</strong> Keep a mental or physical checklist in your car until the routine becomes automatic. Professional drivers never skip pre-drive checks.</div>
+      <h3>Understanding the Controls</h3>
+      <p>Familiarise yourself with every control before driving on public roads:</p>
+      <ul>
+        <li>Accelerator, brake, and clutch (manual) positions and resistance.</li>
+        <li>Gear shift pattern — look at the diagram on the knob.</li>
+        <li>Handbrake / parking brake location and release mechanism.</li>
+        <li>Indicator stalks, wipers, lights, and horn.</li>
+        <li>Dashboard warning lights — know what each colour means.</li>
+      </ul>
+      <div class="warning-box"><strong>Warning:</strong> Never assume every car is the same. Take a moment to locate key controls whenever you drive an unfamiliar vehicle.</div>
+    `
+  },
+  {
+    id: 1,
+    icon: '🚦',
+    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    title: 'Traffic Rules & Laws',
+    desc: 'Speed limits, right-of-way, traffic signals, and key regulations.',
+    tag: 'Essentials',
+    content: `
+      <h3>Speed Limits</h3>
+      <p>Speed limits exist to reduce accidents. Always follow posted limits and adjust for conditions:</p>
+      <ul>
+        <li><strong>School zones:</strong> typically 15–25 mph (25–40 km/h) when in effect.</li>
+        <li><strong>Residential streets:</strong> typically 25–30 mph (40–50 km/h).</li>
+        <li><strong>Urban roads:</strong> 30–45 mph (50–70 km/h) unless otherwise posted.</li>
+        <li><strong>Motorways / highways:</strong> 65–75 mph (105–120 km/h) unless posted.</li>
+      </ul>
+      <div class="warning-box"><strong>Important:</strong> Speed limits are maximums, not targets. Reduce speed in rain, fog, heavy traffic, or near pedestrians.</div>
+      <h3>Traffic Signals</h3>
+      <ul>
+        <li><strong>Red:</strong> Stop completely behind the stop line. Do not proceed.</li>
+        <li><strong>Amber/Yellow:</strong> Prepare to stop unless it's unsafe to do so.</li>
+        <li><strong>Green:</strong> Proceed when safe — yield to pedestrians already crossing.</li>
+        <li><strong>Flashing red:</strong> Treat as a Stop sign — stop, then go when safe.</li>
+        <li><strong>Flashing amber:</strong> Slow down and proceed with caution.</li>
+      </ul>
+      <h3>Right of Way</h3>
+      <ul>
+        <li>At uncontrolled intersections, yield to traffic already in the intersection.</li>
+        <li>At T-junctions, drivers on the minor road give way to drivers on the main road.</li>
+        <li>Pedestrians at crosswalks always have right of way.</li>
+        <li>Emergency vehicles with sirens/lights — pull over safely and stop.</li>
+        <li>When merging, yield to traffic already in the lane you are entering.</li>
+      </ul>
+      <div class="tip-box"><strong>Tip:</strong> Right of way rules prevent accidents, but always be prepared to yield even when you technically have priority — safety over pride.</div>
+    `
+  },
+  {
+    id: 2,
+    icon: '🛣️',
+    img: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800&q=80',
+    title: 'Motorway & Highway Driving',
+    desc: 'Joining, lane discipline, overtaking, and safe following distances.',
+    tag: 'Intermediate',
+    content: `
+      <h3>Joining a Motorway</h3>
+      <p>Joining at the correct speed and using the slip road effectively is critical to safety:</p>
+      <ul>
+        <li>Use the on-ramp to accelerate to match motorway speed (usually 65–70 mph).</li>
+        <li>Check your mirrors and blind spots before merging — signal early.</li>
+        <li>Merge smoothly into a gap; do not stop at the end of the slip road unless forced.</li>
+        <li>Traffic on the motorway has priority — adjust your speed to fit gaps.</li>
+      </ul>
+      <h3>Lane Discipline</h3>
+      <ul>
+        <li>Always drive in the left-most (or right-most in left-hand-drive countries) available lane.</li>
+        <li>Middle and outer lanes are for overtaking only — return promptly after passing.</li>
+        <li>Do not "hog" the middle lane — it's illegal in many countries and dangerous.</li>
+        <li>Keep left except when overtaking; slower traffic keeps left.</li>
+      </ul>
+      <h3>Safe Following Distance</h3>
+      <p>Use the two-second rule as a minimum:</p>
+      <ul>
+        <li>Choose a fixed point (bridge, sign). When the car ahead passes it, count "one thousand one, one thousand two."</li>
+        <li>You should not reach that point until you finish counting.</li>
+        <li>In wet weather, double to four seconds. In fog, increase significantly.</li>
+      </ul>
+      <div class="tip-box"><strong>Tip:</strong> The higher your speed, the longer your stopping distance. At 70 mph, stopping distance can exceed 96 metres (315 feet).</div>
+      <h3>Overtaking</h3>
+      <ul>
+        <li>Only overtake when it is safe, legal, and necessary.</li>
+        <li>Check mirrors, signal, check blind spot, then move out smoothly.</li>
+        <li>Complete the manoeuvre promptly — do not linger alongside another vehicle.</li>
+        <li>Never overtake on a bend, hill crest, at a junction, or where signs prohibit it.</li>
+      </ul>
+      <div class="warning-box"><strong>Warning:</strong> Never undertake (pass on the inside) unless traffic is slow-moving and your lane is moving faster.</div>
+    `
+  },
+  {
+    id: 3,
+    icon: '🔄',
+    img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80',
+    title: 'Manoeuvres',
+    desc: 'Reversing, parking, three-point turns, and roundabouts.',
+    tag: 'Intermediate',
+    content: `
+      <h3>Parallel Parking</h3>
+      <ul>
+        <li>Pull alongside the car in front of your target space, about 1 m away and level.</li>
+        <li>Reverse slowly, turning the wheel towards the kerb when your rear is clear of the front car.</li>
+        <li>Straighten, then turn the wheel away from the kerb to bring the front in.</li>
+        <li>Aim to park within 30 cm of the kerb, without touching it.</li>
+      </ul>
+      <div class="tip-box"><strong>Tip:</strong> Use reference points on your car — a door mirror, wheel arch — to judge distance from the kerb consistently.</div>
+      <h3>Three-Point Turn (Turn in the Road)</h3>
+      <ul>
+        <li>Choose a safe, quiet location. Check all around for traffic and pedestrians.</li>
+        <li>Drive forward slowly to the right, turning the wheel fully to the right.</li>
+        <li>Reverse slowly to the left, turning the wheel fully to the left.</li>
+        <li>Drive forward again, steering back to centre.</li>
+        <li>Observation is key at every stage — keep checking all around.</li>
+      </ul>
+      <h3>Roundabouts</h3>
+      <ul>
+        <li>Give way to traffic already on the roundabout (coming from your right in right-hand-traffic countries).</li>
+        <li>Approach in the correct lane: left for first exit, right (or left for two-lane entry) for straight on or right.</li>
+        <li>Signal your exit: signal right when entering, switch to left signal as you pass the exit before yours.</li>
+        <li>Check mirrors and blind spots before changing lanes on the roundabout.</li>
+      </ul>
+      <h3>Bay Parking</h3>
+      <ul>
+        <li>Drive past the bay, then reverse in, keeping parallel to the bays on either side.</li>
+        <li>Alternatively, drive forward into the bay with careful steering.</li>
+        <li>Make sure you are central and within the lines before switching off.</li>
+      </ul>
+      <div class="warning-box"><strong>Warning:</strong> Always check for cyclists and pedestrians before and during any reversing manoeuvre. They can appear quickly.</div>
+    `
+  },
+  {
+    id: 4,
+    icon: '🌧️',
+    img: 'https://images.unsplash.com/photo-1530908295418-a12e326966ba?w=800&q=80',
+    title: 'Adverse Weather',
+    desc: 'Rain, fog, ice, and night driving techniques.',
+    tag: 'Advanced',
+    content: `
+      <h3>Driving in Rain</h3>
+      <ul>
+        <li>Reduce speed — wet roads can double or triple stopping distances.</li>
+        <li>Increase following distance to at least four seconds.</li>
+        <li>Turn on headlights in heavy rain and poor visibility.</li>
+        <li>Avoid sudden braking or steering — brake gently and early.</li>
+        <li>Watch for standing water — aquaplaning can cause total loss of steering.</li>
+      </ul>
+      <div class="tip-box"><strong>If you aquaplane:</strong> Ease off the accelerator gently. Do not brake hard or steer sharply. Let the tyres regain contact with the road naturally.</div>
+      <h3>Driving in Fog</h3>
+      <ul>
+        <li>Use low beam headlights — high beams reflect off fog and reduce visibility.</li>
+        <li>Use rear fog lights when visibility drops below 100 metres.</li>
+        <li>Slow down significantly — you should be able to stop within your visible distance.</li>
+        <li>Do not rely solely on the tail lights of the car ahead; keep your own safe distance.</li>
+      </ul>
+      <h3>Ice and Snow</h3>
+      <ul>
+        <li>Allow 10x the normal following distance on icy roads.</li>
+        <li>Accelerate, brake, and steer very gently to avoid skidding.</li>
+        <li>If the car begins to skid, steer in the direction of the skid — do not overcorrect.</li>
+        <li>Use the highest gear possible for better traction on ice (manual).</li>
+        <li>Clear all snow and ice from the vehicle before setting off — roof, bonnet, lights.</li>
+      </ul>
+      <h3>Night Driving</h3>
+      <ul>
+        <li>Use headlights from dusk to dawn, and whenever visibility is reduced.</li>
+        <li>Dip to low beams when you see oncoming traffic or are following another vehicle closely.</li>
+        <li>Reduce speed — your stopping distance must always be within the range of your headlights.</li>
+        <li>Watch for pedestrians and cyclists without reflective clothing.</li>
+      </ul>
+      <div class="warning-box"><strong>Warning:</strong> Driver fatigue is significantly more dangerous at night. If you feel drowsy, pull over safely and rest before continuing.</div>
+    `
+  },
+  {
+    id: 5,
+    icon: '🧠',
+    img: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80',
+    title: 'Hazard Awareness',
+    desc: 'Spotting dangers early, defensive driving, and avoiding collisions.',
+    tag: 'Advanced',
+    content: `
+      <h3>What is Hazard Awareness?</h3>
+      <p>A hazard is anything that may cause you to change speed, direction, or stop. Good drivers scan constantly and plan ahead.</p>
+      <ul>
+        <li><strong>Potential hazard:</strong> A parked car (a pedestrian could step out).</li>
+        <li><strong>Developing hazard:</strong> The car door opens and someone begins to exit.</li>
+        <li><strong>Actual hazard:</strong> The pedestrian steps into your path.</li>
+      </ul>
+      <h3>The IPDE Process</h3>
+      <ul>
+        <li><strong>I</strong>dentify — scan the road 12–15 seconds ahead for potential hazards.</li>
+        <li><strong>P</strong>redict — anticipate what those hazards might do.</li>
+        <li><strong>D</strong>ecide — decide on the best response (speed, lane, space).</li>
+        <li><strong>E</strong>xecute — carry out your decision smoothly.</li>
+      </ul>
+      <div class="tip-box"><strong>Tip:</strong> Use the SIPDE method — add "Scan" first. Continuous scanning (not staring) is the foundation of hazard awareness.</div>
+      <h3>Common Hazard Situations</h3>
+      <ul>
+        <li>Children near schools or parks — they may dart out unexpectedly.</li>
+        <li>Cyclists — give at least 1.5 m of clearance when passing; they can wobble.</li>
+        <li>Lorries / trucks — larger blind spots, wider turns, longer braking distances.</li>
+        <li>Junctions — most accidents happen at or near junctions; slow down and look.</li>
+        <li>Driveways — vehicles or pedestrians may emerge without warning.</li>
+      </ul>
+      <h3>Defensive Driving Principles</h3>
+      <ul>
+        <li>Always have an escape route — know where you would go if something went wrong.</li>
+        <li>Never assume — just because you have right of way doesn't mean others will stop.</li>
+        <li>Stay patient — aggressive driving increases risk significantly.</li>
+        <li>Minimise distractions — phone use at the wheel is illegal and extremely dangerous.</li>
+      </ul>
+      <div class="warning-box"><strong>Never:</strong> Drive under the influence of alcohol, drugs, or medication that impairs judgement. The legal limit exists because impairment begins before most people notice it.</div>
+    `
+  }
+];
+
+const QUIZZES = [
+  // Lesson 0 – Getting Started
+  [
+    { q: "What does the 'S' stand for first in the DSSSM cockpit drill?", opts: ["Speed", "Seat", "Signal", "Seatbelt"], answer: 1, exp: "The first S in DSSSM stands for Seat — adjust it so you can fully reach the pedals and steering wheel comfortably." },
+    { q: "When adjusting your seat position, where should your wrists rest when arms are extended to the top of the steering wheel?", opts: ["On the airbag cover", "Over the top of the wheel", "Below the wheel", "At the 9 and 3 position"], answer: 1, exp: "Your wrists should rest on the top of the wheel when arms are extended — this confirms a correct seat distance." },
+    { q: "How many mirrors should you check and adjust before driving?", opts: ["1", "2", "3", "4"], answer: 2, exp: "You should adjust 3 mirrors: the interior rear-view mirror and both external (door) mirrors." },
+    { q: "What should you do before driving an unfamiliar vehicle?", opts: ["Just drive — all cars are the same", "Locate key controls before moving", "Ask a passenger to help", "Read the manual while driving"], answer: 1, exp: "Always locate key controls (lights, wipers, indicators, brake) before driving an unfamiliar vehicle." },
+    { q: "Why should you walk around the vehicle before driving?", opts: ["To warm up the engine", "To check for flat tyres, leaks, or obstructions", "It is a legal requirement only", "To say goodbye to bystanders"], answer: 1, exp: "A walk-around check helps you spot flat tyres, fluid leaks, or objects (especially children or pets) behind the vehicle." }
+  ],
+  // Lesson 1 – Traffic Rules
+  [
+    { q: "A flashing red traffic light means:", opts: ["Proceed with caution", "Stop, then go when safe — same as a stop sign", "Speed up to clear the junction", "Only buses may proceed"], answer: 1, exp: "A flashing red light means treat it as a stop sign: come to a complete stop, then proceed when it's safe." },
+    { q: "What is the typical speed limit in a school zone when in effect?", opts: ["45 mph", "35 mph", "15–25 mph", "50 mph"], answer: 2, exp: "School zones typically enforce 15–25 mph (25–40 km/h) limits during school hours to protect children." },
+    { q: "You approach an uncontrolled intersection at the same time as another vehicle. Who has priority?", opts: ["The driver going faster", "The vehicle already in the intersection or to your right", "The smaller vehicle", "The driver who arrived first always goes"], answer: 1, exp: "At uncontrolled intersections, yield to traffic already in the intersection. Local rules may also give priority to the right." },
+    { q: "A yellow/amber traffic light means:", opts: ["Accelerate — the light is changing to green", "Prepare to stop unless unsafe to do so", "Honk and proceed", "Stop only if pedestrians are crossing"], answer: 1, exp: "Amber means prepare to stop. Only continue through if stopping would be unsafe (e.g., you're too close and going fast)." },
+    { q: "What should you do when you hear an emergency vehicle siren approaching?", opts: ["Speed up to clear the road", "Ignore it if you are on a motorway", "Pull over safely and stop", "Flash your headlights and continue"], answer: 2, exp: "You must pull over to a safe location and stop to allow emergency vehicles to pass." }
+  ],
+  // Lesson 2 – Motorway
+  [
+    { q: "What is the purpose of the slip road / on-ramp when joining a motorway?", opts: ["To slow down before entering", "To accelerate to match motorway traffic speed", "To check your mirrors only", "To yield to all traffic unconditionally"], answer: 1, exp: "The on-ramp is used to accelerate to match the speed of motorway traffic so you can merge smoothly and safely." },
+    { q: "Applying the two-second rule, how long should it take you to reach a reference point after the car ahead passes it?", opts: ["At least 1 second", "At least 2 seconds", "At least 5 seconds", "Exactly 1.5 seconds"], answer: 1, exp: "The two-second rule: after the car ahead passes a fixed point, you should not reach it for at least 2 seconds." },
+    { q: "In wet weather, the following distance should be:", opts: ["The same as dry conditions", "Halved", "Doubled to four seconds or more", "Tripled to six seconds"], answer: 2, exp: "Wet roads greatly increase stopping distances. Double your following distance to a minimum of four seconds in rain." },
+    { q: "What is 'lane hogging' on a motorway?", opts: ["Driving too fast in the outside lane", "Staying in the middle lane unnecessarily", "Overtaking on the inside", "Flashing your headlights"], answer: 1, exp: "Lane hogging means staying in the middle (or outer) lane when the inside lane is clear — it's dangerous and illegal in many countries." },
+    { q: "When is it acceptable to undertake (pass on the inside) on a motorway?", opts: ["Whenever there is space", "Never — it is always illegal", "When the outer lane is moving slower in queuing traffic", "Only at night"], answer: 2, exp: "Undertaking is generally prohibited but may be acceptable when traffic is queuing and your lane is legitimately moving faster." }
+  ],
+  // Lesson 3 – Manoeuvres
+  [
+    { q: "When parallel parking, how far from the kerb should you ideally end up?", opts: ["Right against the kerb", "Within 30 cm without touching it", "About 1 metre away", "It doesn't matter as long as you fit"], answer: 1, exp: "Aim to park within 30 cm of the kerb without touching it — close enough to be clear of the lane, not so close you hit the kerb." },
+    { q: "At a roundabout, which traffic has priority?", opts: ["Traffic entering the roundabout", "The vehicle to your left", "Traffic already on the roundabout", "The largest vehicle"], answer: 2, exp: "Give way to traffic already circulating on the roundabout — they have priority over vehicles trying to enter." },
+    { q: "During a three-point turn, when is observation most important?", opts: ["Only at the start", "Only when reversing", "At every stage of the manoeuvre", "Only when completing the turn"], answer: 2, exp: "Constant observation is critical throughout a three-point turn — hazards can appear at any stage." },
+    { q: "What is the recommended approach when reversing into a bay?", opts: ["Drive in forward for ease", "Reverse in — easier to exit forward afterwards", "Ask a passenger to guide you", "Use parking sensors only"], answer: 1, exp: "Reversing into a bay is generally safer: you have better visibility when pulling out, and pedestrians can see your intentions." },
+    { q: "When should you signal left on a roundabout?", opts: ["Before entering", "As you pass the exit before the one you intend to take", "Only if there are other cars", "You don't need to signal on roundabouts"], answer: 1, exp: "Signal left as you pass the exit before yours — this alerts other drivers and pedestrians that you are about to leave the roundabout." }
+  ],
+  // Lesson 4 – Adverse Weather
+  [
+    { q: "What should you do if your car aquaplanes (skids on standing water)?", opts: ["Brake hard immediately", "Accelerate to regain grip", "Ease off the accelerator gently and avoid sharp steering", "Turn the wheel hard in the opposite direction"], answer: 2, exp: "Ease off the accelerator gently and hold the steering steady. Do not brake hard or steer sharply — let tyres regain contact with the road." },
+    { q: "In fog, why should you use low beam headlights instead of high beams?", opts: ["High beams drain battery faster", "High beams reflect off fog and reduce visibility", "Low beams are brighter", "High beams are reserved for motorways"], answer: 1, exp: "High beams reflect off the water droplets in fog, creating glare that actually reduces how far you can see." },
+    { q: "On icy roads, your following distance should be approximately:", opts: ["The same as dry roads", "Double the normal distance", "5x the normal distance", "10x the normal distance"], answer: 3, exp: "On ice, stopping distances can be 10 times greater than on dry roads. Increase your following distance dramatically." },
+    { q: "When should you use rear fog lights?", opts: ["Whenever it is raining", "When visibility drops below 100 metres", "At all times in winter", "Only on motorways"], answer: 1, exp: "Rear fog lights should be used when visibility drops below 100 metres. Switch them off when conditions improve — they can dazzle drivers behind you." },
+    { q: "What is the most important action before setting off in snowy conditions?", opts: ["Warm up the engine for 20 minutes", "Clear all snow and ice from the entire vehicle", "Deflate tyres slightly", "Drive fast to generate heat"], answer: 1, exp: "Clear all snow and ice from the entire vehicle — roof, bonnet, windows, lights, and mirrors — before moving. Loose snow is a hazard to others." }
+  ],
+  // Lesson 5 – Hazard Awareness
+  [
+    { q: "In the IPDE process, what does 'P' stand for?", opts: ["Proceed", "Predict", "Pause", "Position"], answer: 1, exp: "P stands for Predict — anticipating what hazards may do allows you to plan a response before the situation becomes dangerous." },
+    { q: "How far ahead should you scan the road when driving?", opts: ["2–3 seconds", "5–6 seconds", "12–15 seconds", "Only what's immediately in front"], answer: 2, exp: "Scan 12–15 seconds ahead (approximately a quarter mile at highway speeds). This gives you time to identify and react to hazards." },
+    { q: "Why should you give cyclists at least 1.5 metres of clearance when passing?", opts: ["It's the minimum legal requirement everywhere", "Cyclists may wobble or swerve unexpectedly", "To allow them to see you", "Cyclists always stay in the cycle lane"], answer: 1, exp: "Cyclists can wobble due to road surfaces, wind, or obstacles. A 1.5m buffer provides enough space for them to swerve slightly without being hit." },
+    { q: "What does defensive driving mean?", opts: ["Always having the right of way", "Driving aggressively to keep others alert", "Anticipating hazards, maintaining escape routes, and never assuming others will act correctly", "Driving very slowly at all times"], answer: 2, exp: "Defensive driving means staying alert to hazards, keeping an escape route available, and not assuming other road users will behave correctly." },
+    { q: "Using a mobile phone while driving (hand-held) is:", opts: ["Acceptable at speeds under 20 mph", "Only illegal on motorways", "Illegal and extremely dangerous — it multiplies crash risk significantly", "Legal if using speakerphone"], answer: 2, exp: "Hand-held phone use while driving is illegal in most countries and dramatically increases crash risk — reaction times worsen more than drink driving." }
+  ]
+];
+
+const SIGNS = [
+  { name: "Stop", desc: "Come to a complete stop and yield to all traffic before proceeding.", icon: "🛑", img: "https://images.unsplash.com/photo-1572670014853-1d3a3f22b40f?w=800&q=80",
+    details: ["The stop sign is the only road sign that is octagonal (8 sides) — making it instantly recognisable even if damaged or snow-covered.", "You must come to a complete stop — a rolling slow-down is illegal and can result in fines or points on your licence.", "Stop behind the white stop line, or at the edge of the junction if no line is present.", "Look both ways and only proceed when it is completely safe to do so.", "Running a stop sign is one of the leading causes of intersection collisions."] },
+
+  { name: "Yield / Give Way", desc: "Slow down and yield to approaching traffic. Stop if necessary.", icon: "⚠️", img: "yield-give-way.jpg",
+    details: ["An inverted red triangle — you must slow down and let other traffic or pedestrians pass before proceeding.", "Unlike a Stop sign, you do not have to come to a complete stop unless it is necessary to avoid a collision.", "Commonly found at roundabout entries, slip roads, and T-junctions.", "Failing to yield is a serious offence and a major cause of accidents at junctions.", "Always make eye contact with approaching drivers before pulling out."] },
+
+  { name: "Speed Limit 30", desc: "Maximum speed limit of 30 mph/km/h. Do not exceed.", icon: "🔢", img: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80",
+    details: ["The number shown is the maximum speed — not a target. Always drive to the conditions.", "30 mph is typical in urban and residential areas where pedestrians are present.", "You can still be penalised for driving at 30 mph if conditions (rain, fog, school times) make it unsafe.", "Speed cameras and police enforcement are common in speed-limited zones.", "The limit applies to the road itself — it ends when a new sign appears or the road type changes."] },
+
+  { name: "No Entry", desc: "Vehicles may not enter this road or lane.", icon: "⛔", img: "no-entry.webp",
+    details: ["A red circle with a white horizontal bar — no vehicle of any kind may enter.", "Commonly placed at the exit of one-way streets, pedestrian zones, and car parks.", "Entering a No Entry road is extremely dangerous as oncoming traffic will not expect you.", "It is a serious traffic offence with heavy fines and possible licence points.", "If you miss a turn and see this sign, find an alternative route rather than reversing into a busy road."] },
+
+  { name: "No Overtaking", desc: "Overtaking is prohibited in this area.", icon: "🚫", img: "no-overtaking.jpg",
+    details: ["Shown as two cars side by side inside a red circle — passing the vehicle ahead is forbidden.", "This restriction is placed where overtaking would be especially dangerous: bends, hills, narrow roads.", "The ban remains in force until you see a sign cancelling it, reach a junction, or the road markings change.", "Penalties include fines, licence points, and in serious cases, disqualification.", "Even if you feel it is safe, the law prohibits it — do not overtake."] },
+
+  { name: "One Way", desc: "Traffic flows in one direction only. Do not drive against it.", icon: "➡️", img: "one-way.jpg",
+    details: ["All lanes on a one-way street carry traffic in the same direction — indicated by the arrow.", "Driving in the wrong direction on a one-way road is extremely dangerous and illegal.", "Look for the arrow direction when joining — it is easy to enter facing the wrong way.", "Cyclists may be permitted to travel both ways on some one-way streets — watch for them.", "One-way systems are common in city centres and help manage traffic flow efficiently."] },
+
+  { name: "Pedestrian Crossing", desc: "Slow down. Be prepared to stop for pedestrians crossing.", icon: "🚶", img: "pedestrian-crossing.jpg",
+    details: ["Once a pedestrian steps onto the crossing (or clearly intends to), you must stop — it is a legal requirement.", "Approach at a speed at which you can safely stop if needed.", "Never wave pedestrians across — another vehicle may not stop.", "It is illegal to park on or near a pedestrian crossing, blocking visibility.", "At pelican/toucan crossings, a flashing amber light means give way to pedestrians still crossing."] },
+
+  { name: "School Zone", desc: "Children may be near the road. Reduce speed and be vigilant.", icon: "🏫", img: "school-zone.jpg",
+    details: ["Speed limits in school zones are strictly enforced, especially during drop-off and pick-up times.", "Children can be unpredictable — they may run into the road without warning.", "Watch for lollipop persons (crossing guards) — you must stop when they signal.", "Parking restrictions near schools are heavy — do not block yellow zig-zag lines.", "Even outside school hours, remain cautious as children may be present."] },
+
+  { name: "No U-Turn", desc: "U-turns are prohibited at this location.", icon: "↩️", img: "no-u-turn.jpg",
+    details: ["You cannot turn your vehicle around to travel in the opposite direction at this point.", "Common on dual carriageways, busy high streets, and near junctions where visibility is poor.", "Plan your route to avoid needing a U-turn in restricted areas.", "Performing a U-turn where prohibited can result in fines and points on your licence.", "Three-point turns may also be restricted in the same locations — look for additional signage."] },
+
+  { name: "Roundabout Ahead", desc: "A roundabout is ahead. Give way to traffic already on it.", icon: "🔄", img: "roundabout.jpg",
+    details: ["Traffic already on the roundabout has priority — give way to vehicles coming from your right.", "Approach in the correct lane: left for first exit, right for exits past straight-on.", "Signal right on entry if taking a later exit; switch to left signal as you pass the exit before yours.", "Keep your speed low on approach — you may need to stop suddenly.", "Mini roundabouts have the same rules as full roundabouts — always give way to the right."] },
+
+  { name: "Road Works", desc: "Road works ahead. Reduce speed and follow temporary signs.", icon: "🚧", img: "road-works.jpg",
+    details: ["Temporary speed limits in road works zones are legally enforceable — treat them the same as permanent limits.", "Lane closures are common — merge early and in turn, not at the last moment.", "Workers may be present at the side of or on the road — give them maximum space.", "Road surfaces may be uneven, loose, or freshly laid — adjust your speed accordingly.", "Follow all temporary road markings — they override permanent ones while in force."] },
+
+  { name: "Slippery Road", desc: "Road may be slippery. Reduce speed and increase following distance.", icon: "❄️", img: "slippery-road.jpg",
+    details: ["Common near bridges, shaded areas, and in autumn when leaves fall on the road surface.", "On ice, stopping distances can be up to 10 times longer than on a dry road.", "Accelerate, brake, and steer very gently — sudden inputs cause skids.", "If you begin to skid, ease off the accelerator and steer gently in the direction you want to go.", "Winter tyres or snow chains significantly improve grip in icy conditions."] },
+
+  { name: "Motorway", desc: "Motorway begins. All motorway rules apply from this point.", icon: "🛣️", img: "https://images.unsplash.com/photo-1473445730015-841f29a9490b?w=800&q=80",
+    details: ["No pedestrians, cyclists, motorcycles under 50cc, or agricultural vehicles are permitted.", "A minimum speed may apply — slow vehicles are a hazard to fast-moving traffic.", "Always drive in the left-most (or right-most in left-hand traffic) lane unless overtaking.", "Emergency stops should only be made on the hard shoulder — in a true emergency only.", "Smart motorways may use the hard shoulder as a running lane — check overhead gantry signs."] },
+
+  { name: "No Parking", desc: "Parking is prohibited at this location.", icon: "🅿️", img: "no-parking.jpg",
+    details: ["You may not stop and leave your vehicle unattended at this location.", "Double yellow lines on the road mean no waiting at any time.", "Single yellow lines restrict parking during specific hours — check the nearby time plate.", "Parking in prohibited areas can result in a fine, clamping, or your vehicle being towed.", "Loading and unloading restrictions may also apply — look for kerb marks."] },
+
+  { name: "Priority Road", desc: "You are on the priority road and have right of way at junctions.", icon: "⭐", img: "give-way.jpg",
+    details: ["A yellow diamond sign — you are on the main road and have right of way at all upcoming junctions.", "Vehicles on side roads must yield to you — but never assume they will.", "The priority ends when you see a sign with the same diamond crossed out.", "Common on main roads through towns and villages in continental Europe.", "Maintain a safe speed even with priority — other drivers may not obey the rules."] },
+
+  { name: "Dangerous Bend", desc: "A sharp or dangerous bend ahead. Slow down before the curve.", icon: "〰️", img: "dangerous-bend.webp",
+    details: ["Reduce your speed before the bend — it is too late to brake once you are in the curve.", "Look as far around the bend as possible to identify hazards early.", "Oncoming vehicles, cyclists, and pedestrians may be crossing the centre line on tight bends.", "Do not overtake approaching or on a bend — you cannot see what is coming.", "In wet or icy conditions, safe cornering speed can be much lower than you expect."] },
+
+  { name: "Level Crossing", desc: "Railway level crossing ahead. Be prepared to stop.", icon: "🚂", img: "level-crossing.jpg",
+    details: ["A train can travel at 125 mph or more — it cannot stop quickly even in an emergency.", "Stop when the red lights flash or barriers come down — never zig-zag around lowered barriers.", "If your vehicle breaks down on the crossing, get everyone out immediately and call the railway emergency number.", "Some crossings are uncontrolled — stop, look both ways, and listen before crossing.", "Never race a train to the crossing — the consequences are fatal."] },
+
+  { name: "Bicycle Lane", desc: "This lane is reserved for cyclists.", icon: "🚲", img: "bicycle-lane.jpg",
+    details: ["Marked with a bicycle symbol and white lines on the road surface.", "Motor vehicles must not drive or park in a dedicated cycle lane during its hours of operation.", "Cyclists have priority within the lane — give way when turning across it.", "Some cycle lanes are advisory (dashed lines) and can be entered when necessary.", "Always check for cyclists before opening your car door into a cycle lane."] },
+
+  { name: "No Right Turn", desc: "Turning right is prohibited at this junction.", icon: "🚫", img: "no-right-turn.jpg",
+    details: ["You must not turn right at this junction — continue straight or turn left only.", "The sign is usually placed just before or at the junction it applies to.", "Turning right where prohibited can result in a fine and penalty points.", "Look for alternative routes on parallel streets where right turns are permitted.", "This sign is commonly used in busy urban areas to manage traffic flow and reduce congestion."] },
+
+  { name: "End of Restrictions", desc: "All restrictions that were in force end at this point.", icon: "✅", img: "end-of-restrictions.webp",
+    details: ["Shown as a white circle with a diagonal grey stripe — all previously imposed restrictions now lift.", "This includes speed limits, no overtaking zones, and other specific bans.", "National speed limits now apply — know what those are for your vehicle type and road type.", "Even with restrictions lifted, always drive to the current conditions.", "This sign is common at the end of road works, school zones, or built-up areas."] },
+];
+
+// ─── API ────────────────────────────────────────────────────────────────────────
+const API = 'http://localhost:3000/api';
+let authToken = localStorage.getItem('dr_token') || null;
+let authUsername = localStorage.getItem('dr_username') || null;
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: 'Bearer ' + authToken } : {}),
+      ...(options.headers || {})
+    },
+    body: options.body ? JSON.stringify(options.body) : undefined
+  });
+  return res.json();
+}
+
+// ─── AUTH UI ────────────────────────────────────────────────────────────────────
+let authMode = 'login';
+function switchTab(mode) {
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+  document.getElementById('auth-submit').textContent = mode === 'login' ? 'Log In' : 'Create Account';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function submitAuth() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if (!username || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
+
+  const data = await apiFetch(authMode === 'login' ? '/login' : '/register', { method: 'POST', body: { username, password } });
+  if (data.error) { errEl.textContent = data.error; return; }
+
+  authToken = data.token;
+  authUsername = data.username;
+  localStorage.setItem('dr_token', authToken);
+  localStorage.setItem('dr_username', authUsername);
+  await onLoggedIn();
+}
+
+async function onLoggedIn() {
+  document.getElementById('main-nav').style.display = 'flex';
+  document.getElementById('nav-username').textContent = authUsername;
+  const prog = await apiFetch('/progress');
+  completed = prog.completed || [];
+  renderLessons();
+  renderProgress();
+  updateProgressBadge();
+  showView('home');
+}
+
+function logout() {
+  authToken = null; authUsername = null;
+  localStorage.removeItem('dr_token');
+  localStorage.removeItem('dr_username');
+  completed = [];
+  document.getElementById('main-nav').style.display = 'none';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('auth').classList.add('active');
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-error').textContent = '';
+}
+
+// ─── STATE ─────────────────────────────────────────────────────────────────────
+let completed = [];
+let currentLesson = 0;
+let quizState = { questions: [], index: 0, score: 0, answered: false };
+
+// ─── INIT ───────────────────────────────────────────────────────────────────────
+(async () => {
+  if (authToken) {
+    const data = await apiFetch('/me');
+    if (data.username) {
+      authUsername = data.username;
+      await onLoggedIn();
+      return;
+    }
+    localStorage.removeItem('dr_token');
+    localStorage.removeItem('dr_username');
+  }
+  // show auth screen
+  document.getElementById('auth').classList.add('active');
+})();
+
+// ─── VIEWS ─────────────────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  const navMap = { home: 'nav-home', lessons: 'nav-lessons', signs: 'nav-signs' };
+  if (navMap[id]) document.getElementById(navMap[id]).classList.add('active');
+  updateProgressBadge();
+}
+
+function updateProgressBadge() {
+  document.getElementById('progress-badge').textContent = `${completed.length} / ${LESSONS.length} done`;
+}
+
+// ─── LESSONS ───────────────────────────────────────────────────────────────────
+function renderLessons() {
+  const grid = document.getElementById('lessons-grid');
+  grid.innerHTML = LESSONS.map((l, i) => {
+    const done = completed.includes(i);
+    return `
+      <div class="lesson-card ${done ? 'done' : ''}" onclick="openLesson(${i})">
+        <div class="card-bg" style="background-image:url('${l.img}')"></div>
+        <div class="card-overlay"></div>
+        ${done ? '<div class="done-badge">✓</div>' : ''}
+        <div class="card-content">
+          <div class="card-tag">${done ? '✓ Completed' : l.tag}</div>
+          <div class="card-title">${l.title}</div>
+          <div class="card-desc">${l.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openLesson(index) {
+  currentLesson = index;
+  const l = LESSONS[index];
+  document.getElementById('detail-header').innerHTML = `
+    <div class="lh-icon"><img src="${l.img}" alt="${l.title}"></div>
+    <h2>${l.title}</h2>
+    <p>${l.desc}</p>
+  `;
+  document.getElementById('detail-body').innerHTML = l.content;
+  showView('lesson-detail');
+}
+
+// ─── QUIZ ──────────────────────────────────────────────────────────────────────
+function startQuiz() {
+  const questions = [...QUIZZES[currentLesson]].sort(() => Math.random() - 0.5);
+  quizState = { questions, index: 0, score: 0, answered: false };
+  document.getElementById('quiz-lesson-name').textContent = LESSONS[currentLesson].title;
+  showView('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const { questions, index } = quizState;
+  const q = questions[index];
+  const total = questions.length;
+  const pct = (index / total) * 100;
+
+  document.getElementById('quiz-progress').style.width = pct + '%';
+  document.getElementById('quiz-counter').textContent = `Question ${index + 1} of ${total}`;
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('feedback-area').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+
+  const letters = ['A', 'B', 'C', 'D'];
+  document.getElementById('options-container').innerHTML = q.opts.map((opt, i) => `
+    <button class="option-btn" onclick="selectAnswer(${i})">
+      <span class="option-letter">${letters[i]}</span>
+      ${opt}
+    </button>
+  `).join('');
+
+  quizState.answered = false;
+}
+
+function selectAnswer(chosen) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+
+  const q = quizState.questions[quizState.index];
+  const correct = q.answer;
+  const btns = document.querySelectorAll('.option-btn');
+
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && i !== correct) btn.classList.add('wrong');
+  });
+
+  const isCorrect = chosen === correct;
+  if (isCorrect) quizState.score++;
+
+  const fb = document.getElementById('feedback-area');
+  fb.style.display = 'block';
+  fb.innerHTML = `<div class="feedback-box ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✓ Correct! ' : '✗ Not quite. '}${q.exp}</div>`;
+
+  const isLast = quizState.index === quizState.questions.length - 1;
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.style.display = 'inline-flex';
+  nextBtn.textContent = isLast ? 'See Results' : 'Next Question →';
+}
+
+function nextQuestion() {
+  quizState.index++;
+  if (quizState.index >= quizState.questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  const { score, questions } = quizState;
+  const total = questions.length;
+  const pct = Math.round((score / total) * 100);
+
+  let cls = pct >= 80 ? 'great' : pct >= 50 ? 'ok' : 'poor';
+  let title = pct >= 80 ? 'Excellent Work!' : pct >= 50 ? 'Good Effort!' : 'Keep Practising';
+  let subtitle = pct >= 80
+    ? `You scored ${pct}% — outstanding knowledge of this topic.`
+    : pct >= 50
+    ? `You scored ${pct}% — review the lesson and try again to improve.`
+    : `You scored ${pct}% — read through the lesson again carefully before retrying.`;
+
+  document.getElementById('score-circle').className = `score-circle ${cls}`;
+  document.getElementById('score-circle').innerHTML = `${pct}%<div class="score-label">Score</div>`;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-subtitle').textContent = subtitle;
+  document.getElementById('correct-count').textContent = score;
+  document.getElementById('wrong-count').textContent = total - score;
+  document.getElementById('total-count').textContent = total;
+
+  apiFetch('/quiz-result', { method: 'POST', body: { lessonIndex: currentLesson, lessonTitle: LESSONS[currentLesson].title, score, total } });
+  if (pct >= 80 && !completed.includes(currentLesson)) {
+    completed.push(currentLesson);
+    apiFetch('/progress', { method: 'PUT', body: { completed } });
+    renderLessons();
+    renderProgress();
+  }
+
+  showView('results');
+}
+
+// ─── SIGNS ─────────────────────────────────────────────────────────────────────
+function renderSigns() {
+  const grid = document.getElementById('signs-grid');
+  grid.innerHTML = SIGNS.map((s, i) => `
+    <div class="sign-card" onclick="openSign(${i})" style="cursor:pointer;">
+      <div class="sign-card-bg" style="background-image:url('${s.img}')"></div>
+      <div class="sign-card-overlay"></div>
+      <div class="sign-card-content">
+        <div class="sign-name">${s.name}</div>
+        <div class="sign-desc">${s.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── PROGRESS ──────────────────────────────────────────────────────────────────
+function renderProgress() {
+  const grid = document.getElementById('progress-grid');
+  const count = document.getElementById('progress-header-count');
+  count.textContent = `${completed.length} of ${LESSONS.length} completed`;
+  grid.innerHTML = LESSONS.map((l, i) => {
+    const done = completed.includes(i);
+    return `
+      <div class="progress-card ${done ? 'done' : 'todo'}" onclick="${done ? '' : `openLesson(${i})`}" style="${done ? '' : 'cursor:pointer;'}">
+        <div class="progress-card-bg" style="background-image:url('${l.img}')"></div>
+        <div class="progress-card-overlay"></div>
+        <div class="progress-card-content">
+          <div class="progress-status">${done ? '✓ Completed' : '→ Not started'}</div>
+          <div class="progress-card-title">${l.title}</div>
+          <div class="progress-card-desc">${l.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+renderLessons();
+renderProgress();
+renderSigns();
+updateProgressBadge();
+
+// ─── SIGN MODAL ────────────────────────────────────────────────────────────────
+function openSign(index) {
+  const s = SIGNS[index];
+  const backdrop = document.getElementById('sign-modal-backdrop');
+  document.getElementById('sign-modal-img').style.backgroundImage = `url('${s.img}')`;
+  document.getElementById('sign-modal-title').textContent = s.name;
+  document.getElementById('sign-modal-desc').textContent = s.desc;
+  document.getElementById('sign-modal-facts').innerHTML = s.details.map(d =>
+    `<div class="sign-modal-fact">${d}</div>`
+  ).join('');
+  backdrop.classList.add('open');
+}
+
+function closeSignModal() {
+  document.getElementById('sign-modal-backdrop').classList.remove('open');
+}
+
+document.getElementById('sign-modal-backdrop').addEventListener('click', function(e) {
+  if (e.target === this) closeSignModal();
+});
+</script>
+
+<!-- SIGN MODAL -->
+<div class="sign-modal-backdrop" id="sign-modal-backdrop">
+  <div class="sign-modal">
+    <div class="sign-modal-img" id="sign-modal-img">
+      <div class="sign-modal-img-overlay"></div>
+      <button class="sign-modal-close" onclick="closeSignModal()">✕</button>
+      <div class="sign-modal-title" id="sign-modal-title"></div>
+    </div>
+    <div class="sign-modal-body">
+      <div class="sign-modal-desc" id="sign-modal-desc"></div>
+      <div class="sign-modal-facts-title">Key Facts</div>
+      <div class="sign-modal-facts" id="sign-modal-facts"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
